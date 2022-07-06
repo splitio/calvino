@@ -39,7 +39,7 @@ This puts the report to standard out and a file called report.
 
 Report is generated...
 
-Event type id, followed by properties found with sets of 2-5 values.
+Event type id, followed by properties found with sets between 2 and 12 unique values.
 Number of occurrences follows each property value.
 
 ```
