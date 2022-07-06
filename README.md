@@ -16,9 +16,7 @@ For other environments, export last 7 days.
 Download the GZIP of your events.
 Unzip the events.
 
-Copy the CSV to *part.csv*
-
-The tool expects its input to be called *part.csv*
+The tool expects its input to be the name of your CSV file
 
 To run the tool... you must have node.js installed and I assume you can use the terminal. 
 
@@ -26,14 +24,16 @@ To run the tool... you must have node.js installed and I assume you can use the 
 > npm install
 ```
 
+The CSV is expected to be uncompressed.
+
 ```
-> node index.js
+> node index.js <filename of your CSV events>
 ```
 
 That will put the report to standard out.  If you want to save it?
 
 ```
-node index.js | tee report
+node index.js <filename of your CSV events> | tee report
 ```
 This puts the report to standard out and a file called report.
 

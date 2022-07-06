@@ -10,10 +10,19 @@ let start = new Date().getTime();
 
 async function getReport() { 
   start = new Date().getTime();
+  const args = process.argv.slice(2);
+  let eventsFile = 'part.csv';
+  if(args.length < 1) {
+    console.log('usage: node index.js <CSV events filename>');
+    return;
+  } else {
+    eventsFile = args[0];
+  }
+
   let dimensions = [];
 
   let isFirst = true;
-  fs.createReadStream('part.csv')
+  fs.createReadStream(eventsFile)
   .pipe(csv.parse({escape: '\\'}))
   .on('error', error => console.error(error))
   .on('data', line => {
