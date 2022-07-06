@@ -1,9 +1,4 @@
-const axios = require('axios').default;
-const login = require('./login');
 const fs = require('fs');
-const https = require('https');
-const gunzip = require('gunzip-file');
-// const parse = require('csv-parse');
 const csv = require('@fast-csv/parse');
 
 let start = new Date().getTime();
