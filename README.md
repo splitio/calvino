@@ -20,7 +20,7 @@ Copy the CSV to *part.csv*
 
 The tool expects its input to be called *part.csv*
 
-To run the tool... 
+To run the tool... you must have node.js installed and I assume you can use the terminal. 
 
 ```
 > npm install
@@ -29,6 +29,13 @@ To run the tool...
 ```
 > node index.js
 ```
+
+That will put the report to standard out.  If you want to save it?
+
+```
+node index.js | tee report
+```
+This puts the report to standard out and a file called report.
 
 Report is generated...
 
