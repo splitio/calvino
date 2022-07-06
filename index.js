@@ -55,7 +55,7 @@ async function getReport() {
   .on('end', () => {
     let filtered = []
     for(const dimension of Object.keys(dimensions)) {
-      console.log(dimension);
+      //console.log(dimension);
       filtered[dimension] = [];
       for(prop of Object.keys(dimensions[dimension])) {
         const map = dimensions[dimension][prop];
