@@ -27,13 +27,13 @@ To run the tool... you must have node.js installed and I assume you can use the 
 The CSV is expected to be uncompressed.
 
 ```
-> node index.js <filename of your CSV events>
+> node calvino.js <filename of your CSV events>
 ```
 
 That will put the report to standard out.  If you want to save it?
 
 ```
-node index.js <filename of your CSV events> | tee report
+node calvino.js <filename of your CSV events> | tee report
 ```
 This puts the report to standard out and a file called report.
 
