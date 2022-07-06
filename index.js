@@ -10,36 +10,37 @@ let start = new Date().getTime();
 
 async function getReport() { 
   start = new Date().getTime();
-  let event = JSON.parse(fs.readFileSync('input.json')); 
-  console.log(event);
+  // let event = JSON.parse(fs.readFileSync('input.json')); 
+  // console.log(event);
 
-  const cookies = await login.login(event);
+  // const cookies = await login.login(event);
 
-  csrf = cookies.csrf;
-  jwt = cookies.jwt;
+  // csrf = cookies.csrf;
+  // jwt = cookies.jwt;
 
-  if(!csrf || !jwt) {
-    const loginError = {
-      statusCode: 500,
-      body: { 'result': 'couldn\'t login! password correct? account locked?' }
-    };
+  // if(!csrf || !jwt) {
+  //   const loginError = {
+  //     statusCode: 500,
+  //     body: { 'result': 'couldn\'t login! password correct? account locked?' }
+  //   };
 
-    console.log(loginError);
-    return loginError;
-  }
+  //   console.log(loginError);
+  //   return loginError;
+  // }
 
-  authCookie = 'split-csrf=' + csrf + "; split-jwt=" + jwt + ';';
-  const orgPair = await login.getOrgId(csrf, authCookie);
-  orgId = orgPair.orgId;
-  splitUserIdentifier = orgPair.splitUserIdentifier;
+  // authCookie = 'split-csrf=' + csrf + "; split-jwt=" + jwt + ';';
+  // const orgPair = await login.getOrgId(csrf, authCookie);
+  // orgId = orgPair.orgId;
+  // splitUserIdentifier = orgPair.splitUserIdentifier;
 
-  workspaceId = await findWorkspace(event.splitAdminApiKey, event.workspaceName);
+  // workspaceId = await findWorkspace(event.splitAdminApiKey, event.workspaceName);
 
-  let s = new Date().getTime();
-  let link = await downloadExport(csrf, authCookie, orgId, workspaceId, event.exportId);
-  console.log(link);
+  // let s = new Date().getTime();
+  // let link = await downloadExport(csrf, authCookie, orgId, workspaceId, event.exportId);
+  // console.log(link);
 
   let dimensions = [];
+/*
   https.get(link, (res) => {
     const path = 'part.gz';
     const filePath = fs.createWriteStream(path);
@@ -56,6 +57,7 @@ async function getReport() {
 
       gunzip('part.gz', 'part.csv', function() {
          console.log('gunzipped data');
+*/
          let isFirst = true;
          fs.createReadStream('part.csv')
           .pipe(csv.parse({escape: '\\'}))
@@ -71,9 +73,17 @@ async function getReport() {
               }
               for(const key of Object.keys(props)) {
                 if(!dimensions[fields[1]][key]) {
-                  dimensions[fields[1]][key] = new Set();
+                  // dimensions[fields[1]][key] = new Set();
+                  dimensions[fields[1]][key] = new Map();
                 }
-                dimensions[fields[1]][key].add(props[key]);
+                if(props[key] !== null) {
+                  // dimensions[fields[1]][key].add(props[key]);
+                  let incr = dimensions[fields[1]][key].get(props[key]);
+                  if(!incr) {
+                    incr = 0;
+                  }
+                  dimensions[fields[1]][key].set(props[key], incr + 1);
+                }
               }
             } else {
               isFirst = false;
@@ -85,21 +95,23 @@ async function getReport() {
               console.log(dimension);
               filtered[dimension] = [];
               for(prop of Object.keys(dimensions[dimension])) {
-                const set = dimensions[dimension][prop];
-                if(set.size < 2 || set.size > 5) {
+                const map = dimensions[dimension][prop];
+
+                if(map.size < 2 || map.size > 12) {
                   dimensions[dimension][prop] = [];
                 } else {
-                  filtered[dimension][prop] = dimensions[dimension][prop];
+                  let myMap = dimensions[dimension][prop];
+                  const sortedMap = new Map([...myMap.entries()].sort((a, b) => b[1] - a[1]));
+                  filtered[dimension][prop] = sortedMap;
                 }
               }
             }
-            console.log(dimensions);
             console.log(filtered);
+            console.log('FINISH RUN in ' + (new Date().getTime() - start)/1000 + ' seconds');            
           });
-      });
-    });
-  });
-  console.log('FINISH RUN in ' + (new Date().getTime() - start)/1000 + ' seconds');
+   //   });
+   // });
+  //});
 }
 
 function findWorkspace(apiKey, workspaceName) {
