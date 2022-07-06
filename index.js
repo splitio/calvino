@@ -10,108 +10,59 @@ let start = new Date().getTime();
 
 async function getReport() { 
   start = new Date().getTime();
-  // let event = JSON.parse(fs.readFileSync('input.json')); 
-  // console.log(event);
-
-  // const cookies = await login.login(event);
-
-  // csrf = cookies.csrf;
-  // jwt = cookies.jwt;
-
-  // if(!csrf || !jwt) {
-  //   const loginError = {
-  //     statusCode: 500,
-  //     body: { 'result': 'couldn\'t login! password correct? account locked?' }
-  //   };
-
-  //   console.log(loginError);
-  //   return loginError;
-  // }
-
-  // authCookie = 'split-csrf=' + csrf + "; split-jwt=" + jwt + ';';
-  // const orgPair = await login.getOrgId(csrf, authCookie);
-  // orgId = orgPair.orgId;
-  // splitUserIdentifier = orgPair.splitUserIdentifier;
-
-  // workspaceId = await findWorkspace(event.splitAdminApiKey, event.workspaceName);
-
-  // let s = new Date().getTime();
-  // let link = await downloadExport(csrf, authCookie, orgId, workspaceId, event.exportId);
-  // console.log(link);
-
   let dimensions = [];
-/*
-  https.get(link, (res) => {
-    const path = 'part.gz';
-    const filePath = fs.createWriteStream(path);
-    res.pipe(filePath);
-    filePath.on('finish', () => {
-      filePath.close();
-      console.log('download completed');
 
-      const options = {
-        delimiter: ',',
-        quote: '"',
-        relax: true
-      };
+  let isFirst = true;
+  fs.createReadStream('part.csv')
+  .pipe(csv.parse({escape: '\\'}))
+  .on('error', error => console.error(error))
+  .on('data', line => {
+    if(!isFirst) {
+      const fields = line;
+      const properties = fields[9];
+      const json = properties;
+      const props = JSON.parse(json);
+      if(!dimensions[fields[1]]) {
+        dimensions[fields[1]] = [];
+      }
+      for(const key of Object.keys(props)) {
+        if(!dimensions[fields[1]][key]) {
+          // dimensions[fields[1]][key] = new Set();
+          dimensions[fields[1]][key] = new Map();
+        }
+        if(props[key] !== null) {
+          // dimensions[fields[1]][key].add(props[key]);
+          let incr = dimensions[fields[1]][key].get(props[key]);
+          if(!incr) {
+            incr = 0;
+          }
+          dimensions[fields[1]][key].set(props[key], incr + 1);
+        }
+      }
+    } else {
+      isFirst = false;
+    }
+  })
+  .on('end', () => {
+    let filtered = []
+    for(const dimension of Object.keys(dimensions)) {
+      console.log(dimension);
+      filtered[dimension] = [];
+      for(prop of Object.keys(dimensions[dimension])) {
+        const map = dimensions[dimension][prop];
 
-      gunzip('part.gz', 'part.csv', function() {
-         console.log('gunzipped data');
-*/
-         let isFirst = true;
-         fs.createReadStream('part.csv')
-          .pipe(csv.parse({escape: '\\'}))
-          .on('error', error => console.error(error))
-          .on('data', line => {
-            if(!isFirst) {
-              const fields = line;
-              const properties = fields[9];
-              const json = properties;
-              const props = JSON.parse(json);
-              if(!dimensions[fields[1]]) {
-                dimensions[fields[1]] = [];
-              }
-              for(const key of Object.keys(props)) {
-                if(!dimensions[fields[1]][key]) {
-                  // dimensions[fields[1]][key] = new Set();
-                  dimensions[fields[1]][key] = new Map();
-                }
-                if(props[key] !== null) {
-                  // dimensions[fields[1]][key].add(props[key]);
-                  let incr = dimensions[fields[1]][key].get(props[key]);
-                  if(!incr) {
-                    incr = 0;
-                  }
-                  dimensions[fields[1]][key].set(props[key], incr + 1);
-                }
-              }
-            } else {
-              isFirst = false;
-            }
-          })
-          .on('end', () => {
-            let filtered = []
-            for(const dimension of Object.keys(dimensions)) {
-              console.log(dimension);
-              filtered[dimension] = [];
-              for(prop of Object.keys(dimensions[dimension])) {
-                const map = dimensions[dimension][prop];
-
-                if(map.size < 2 || map.size > 12) {
-                  dimensions[dimension][prop] = [];
-                } else {
-                  let myMap = dimensions[dimension][prop];
-                  const sortedMap = new Map([...myMap.entries()].sort((a, b) => b[1] - a[1]));
-                  filtered[dimension][prop] = sortedMap;
-                }
-              }
-            }
-            console.log(filtered);
-            console.log('FINISH RUN in ' + (new Date().getTime() - start)/1000 + ' seconds');            
-          });
-   //   });
-   // });
-  //});
+        if(map.size < 2 || map.size > 12) {
+          dimensions[dimension][prop] = [];
+        } else {
+          let myMap = dimensions[dimension][prop];
+          const sortedMap = new Map([...myMap.entries()].sort((a, b) => b[1] - a[1]));
+          filtered[dimension][prop] = sortedMap;
+        }
+      }
+    }
+    console.log(filtered);
+    console.log('FINISH RUN in ' + (new Date().getTime() - start)/1000 + ' seconds');            
+  });
 }
 
 function findWorkspace(apiKey, workspaceName) {
